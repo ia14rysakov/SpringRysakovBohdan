@@ -86,4 +86,16 @@ class UserServiceImplementation(val userRepository: UserDao) : UserService {
                 throw UserNotFoundException()
             }
         }
+
+    override fun deleteAllUsers(): Boolean {
+        return try {
+            logger.info("Attempt to delete all Users")
+            val result = userRepository.deleteAll()
+            logger.info("Users Succesfully Deleted")
+            result
+        } catch (e: Exception) {
+            logger.error("Failed to delete all Users", e)
+            throw e
+        }
+    }
 }

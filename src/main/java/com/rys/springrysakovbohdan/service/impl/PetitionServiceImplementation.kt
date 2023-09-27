@@ -102,4 +102,16 @@ class PetitionServiceImplementation(val petitionRepository: PetitionDao) : Petit
                 throw e
             }
         }
+
+    override fun deleteAllPetitions(): Boolean {
+        return try {
+            logger.info("Attempt to delete all petitions")
+            val result = petitionRepository.deleteAll()
+            logger.info("Petitions Succesfully Deleted")
+            result
+        } catch (e: Exception) {
+            logger.error("Failed to delete all petitions", e)
+            throw e
+        }
+    }
 }

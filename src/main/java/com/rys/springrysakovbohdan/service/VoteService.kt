@@ -15,4 +15,6 @@ interface VoteService {
     fun updateVote(voteId: String, vote: Vote, userId: String): Vote
 
     fun deleteVoteById(voteId: String,userId: String): Boolean
+
+    fun deleteAllVotes(): Boolean
 }

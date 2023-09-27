@@ -15,4 +15,6 @@ interface PetitionService {
     fun updatePetition(petitionId: String, petition: Petition, userId: String): Petition
 
     fun deletePetitionById(petitionId: String, userId: String): Boolean
+
+    fun deleteAllPetitions(): Boolean
 }

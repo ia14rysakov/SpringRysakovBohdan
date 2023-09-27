@@ -15,4 +15,6 @@ interface UserService {
     fun updateUserById(targetId: String, user: User, currentId: String): User
 
     fun deleteUserById(targetId: String, currentId: String): Boolean
+
+    fun deleteAllUsers(): Boolean
 }

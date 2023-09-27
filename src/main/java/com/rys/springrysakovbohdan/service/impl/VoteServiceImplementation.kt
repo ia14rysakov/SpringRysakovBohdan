@@ -105,4 +105,16 @@ class VoteServiceImplementation(val voteRepository: VoteDao) : VoteService {
                 throw e
             }
         }
+
+    override fun deleteAllVotes(): Boolean {
+        logger.info("Attempting to delete all votes")
+        return try {
+            val result = voteRepository.deleteAll()
+            logger.info("Successfully deleted all votes")
+            result
+        } catch (e: Exception) {
+            logger.error("Failed to delete all votes", e)
+            throw e
+        }
+    }
 }
