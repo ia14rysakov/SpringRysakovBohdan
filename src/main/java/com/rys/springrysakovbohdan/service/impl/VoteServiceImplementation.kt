@@ -1,5 +1,6 @@
 package com.rys.springrysakovbohdan.service.impl
 
+import com.rys.springrysakovbohdan.exceptions.UnauthorizedAccessException
 import com.rys.springrysakovbohdan.exceptions.VoteNotFoundException
 import com.rys.springrysakovbohdan.model.Vote
 import com.rys.springrysakovbohdan.repository.VoteDao
@@ -14,79 +15,94 @@ class VoteServiceImplementation(val voteRepository: VoteDao) : VoteService {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    override fun createVote(vote: Vote): Vote =
+    override fun createVote(vote: Vote, userId: String): Vote =
         try {
-            logger.info("Attempt to create Vote")
-            val newVote = voteRepository.create(vote)
-            logger.info("Vote {} Succesfully Created", newVote)
+            logger.info("User {} attempting to create a new vote", userId)
+            val newVote = voteRepository.create(vote.copy(userId = userId))
+            logger.info("Successfully created vote {} for user {}", newVote, userId)
             newVote
         } catch (e: Exception) {
-            logger.error("Vote {} Failed To Create", vote, e)
+            logger.error("Failed to create vote for user {}: {}", userId, vote, e)
             throw e
         }
 
     override fun getVoteById(id: String): Vote? =
         try {
-            logger.info("Attempt to get Vote by Id")
+            logger.info("Attempting to retrieve vote with ID: {}", id)
             val vote = voteRepository.findById(id)
-            logger.info("Vote {} Succesfully Found", id)
+            if (vote != null) {
+                logger.info("Successfully retrieved vote with ID: {}", id)
+            } else {
+                logger.warn("Vote with ID {} not found", id)
+            }
             vote
         } catch (e: Exception) {
-            logger.error("Vote {} not found", id, e)
+            logger.error("Error occurred while retrieving vote with ID: {}", id, e)
             throw e
         }
 
     override fun getAllVotes(): List<Vote> =
         run {
-            logger.info("Attempt to get all Votes")
-            val votes = voteRepository.findAll()
-            votes.ifEmpty {
-                logger.warn("Votes Are Not Found! Maybe database is empty?")
+            logger.info("Attempting to retrieve all votes")
+            val voteList = voteRepository.findAll()
+            if (voteList.isEmpty()) {
+                logger.warn("No votes found in the database")
+            } else {
+                logger.info("Successfully retrieved {} votes from the database", voteList.size)
             }
-            logger.info("Votes loaded from DB")
-            votes
+            voteList
         }
 
-    override fun updateVote(id: String, vote: Vote): Vote =
+    override fun updateVote(voteId: String, vote: Vote, userId: String): Vote =
         run {
-            logger.info("Attempt to update Vote {} with data {} ", id, vote)
-            getVoteById(id)
-                ?.let {
-                    logger.info("Vote with id : {} found! Making attempt to update data", id)
-                    try {
-                        val newVote = voteRepository.create(vote)
-                        logger.info("Vote with id  {} Succesfully Updated. Id after updation : {}", id, newVote.id)
-                        newVote
-                    } catch (e: Exception) {
-                        logger.error("Failed to update Vote {}", id, e)
-                        throw e
-                    }
-                }
-                ?: run {
-                    logger.error("Vote Not Found {}", vote.id)
-                    throw VoteNotFoundException()
-                }
+            logger.info("User {} attempting to update vote with ID: {}", userId, voteId)
+            val existingVote = getVoteById(voteId) ?: run {
+                logger.warn("Vote with ID {} not found during update attempt", voteId)
+                throw VoteNotFoundException()
+            }
+
+            // Assuming votes are tied to users in your business logic
+            if (existingVote.userId != userId) {
+                logger.warn("Unauthorized attempt by user {} to update vote {}", userId, voteId)
+                throw UnauthorizedAccessException("User not authorized to update this vote")
+            }
+
+            try {
+                val updatedVote = voteRepository.create(vote.copy(id = existingVote.id, userId = userId))
+                logger.info(
+                    "User {} successfully updated vote with ID {}. New ID after update: {}",
+                    userId,
+                    voteId,
+                    updatedVote.id
+                )
+                updatedVote
+            } catch (e: Exception) {
+                logger.error("Failed to update vote with ID {} for user {}: {}", voteId, userId, vote, e)
+                throw e
+            }
         }
 
-    override fun deleteVoteById(id: String): Boolean =
+    override fun deleteVoteById(voteId: String, userId: String): Boolean =
         run {
-            logger.info("Attempt to delete Vote {}", id)
-            getVoteById(id)
-                ?.let {
-                    logger.info("Vote with id : {} found! Making attempt to delete", id)
-                    try {
-                        val result = voteRepository.deleteById(id)
-                        logger.info("Vote {} Succesfully Deleted", id)
-                        result
-                    } catch (e: Exception) {
-                        logger.error("Failed to delete Vote {}", id, e)
-                        throw e
-                    }
-                }
-                ?: run {
-                    logger.error("Vote Not Found {}", id)
-                    throw VoteNotFoundException()
-                }
+            logger.info("User {} attempting to delete vote with ID: {}", userId, voteId)
+            val existingVote = getVoteById(voteId) ?: run {
+                logger.warn("Vote with ID {} not found during deletion attempt", voteId)
+                throw VoteNotFoundException()
+            }
+
+            // Assuming votes are tied to users in your business logic
+            if (existingVote.userId != userId) {
+                logger.warn("Unauthorized attempt by user {} to delete vote {}", userId, voteId)
+                throw UnauthorizedAccessException("User not authorized to delete this vote")
+            }
+
+            try {
+                val result = voteRepository.deleteById(voteId)
+                logger.info("User {} successfully deleted vote with ID: {}", userId, voteId)
+                result
+            } catch (e: Exception) {
+                logger.error("Failed to delete vote with ID {} for user {}: ", voteId, userId, e)
+                throw e
+            }
         }
 }
-

@@ -1,6 +1,7 @@
 package com.rys.springrysakovbohdan.service.impl
 
 import com.rys.springrysakovbohdan.exceptions.PetitionNotFoundException
+import com.rys.springrysakovbohdan.exceptions.UnauthorizedAccessException
 import com.rys.springrysakovbohdan.model.Petition
 import com.rys.springrysakovbohdan.repository.PetitionDao
 import com.rys.springrysakovbohdan.service.PetitionService
@@ -14,86 +15,91 @@ class PetitionServiceImplementation(val petitionRepository: PetitionDao) : Petit
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    override fun createPetition(petition: Petition): Petition =
+    override fun createPetition(petition: Petition, userId: String): Petition =
         try {
-            logger.info("Attempt to create Petition")
-            val newPetition = petitionRepository.create(petition)
-            logger.info("Petition {} Succesfully Created", newPetition)
+            logger.info("User {} attempting to create a new petition", userId)
+            val newPetition = petitionRepository.create(petition.copy(userId = userId))
+            logger.info("Successfully created petition {} for user {}", newPetition, userId)
             newPetition
         } catch (e: Exception) {
-            logger.error("Petition {} Failed To Create", petition, e)
+            logger.error("Failed to create petition for user {}: {}", userId, petition, e)
             throw e
         }
 
     override fun getPetitionById(id: String): Petition? =
         try {
-            logger.info("Attempt to get Petition by Id")
+            logger.info("Attempting to retrieve petition with ID: {}", id)
             val petition = petitionRepository.findById(id)
-            logger.info("Petition {} Succesfully Found", id)
+            if (petition != null) {
+                logger.info("Successfully retrieved petition with ID: {}", id)
+            } else {
+                logger.warn("Petition with ID {} not found", id)
+            }
             petition
         } catch (e: Exception) {
-            logger.error("Petition {} not found", id, e)
+            logger.error("Error occurred while retrieving petition with ID: {}", id, e)
             throw e
         }
 
     override fun getAllPetitions(): List<Petition> =
         run {
-            logger.info("Attempt to get all Petitions")
-            val petition = petitionRepository.findAll()
-            petition.ifEmpty {
-                logger.warn("Petitions Are Not Found! Maybe database is empty?")
+            logger.info("Attempting to retrieve all petitions")
+            val petitionList = petitionRepository.findAll()
+            if (petitionList.isEmpty()) {
+                logger.warn("No petitions found in the database")
+            } else {
+                logger.info("Successfully retrieved {} petitions from the database", petitionList.size)
             }
-            logger.info("Petitions loaded from DB")
-            petition
+            petitionList
         }
 
-    override fun updatePetition(id: String, petition: Petition): Petition =
+    override fun updatePetition(petitionId: String, petition: Petition, userId: String): Petition =
         run {
-            logger.info("Attempt to update petition {} with data : {}", id, petition)
-            getPetitionById(id)
-                ?.let {
-                    logger.info("Petition with id : {} found! Making attempt to update data", id)
-                    try {
-                        val newPetition = petitionRepository.create(petition)
-                        logger.info(
-                            "Petition with id : {} succesfully updated. Id after updation : {}",
-                            id,
-                            newPetition.id
-                        )
-                        newPetition
-                    } catch (e: Exception) {
-                        logger.error(
-                            "Updation failed! Failed to save new petition! Petition id : {}, new data : {}",
-                            id,
-                            petition
-                        )
-                        throw e
-                    }
-                }
-                ?: run {
-                    logger.error("Updation Failed! Petition {} Not Found", id)
-                    throw PetitionNotFoundException()
-                }
+            logger.info("User {} attempting to update petition with ID: {}", userId, petitionId)
+            val existingPetition = getPetitionById(petitionId) ?: run {
+                logger.warn("Petition with ID {} not found during update attempt", petitionId)
+                throw PetitionNotFoundException()
+            }
+
+            if (existingPetition.userId != userId) {
+                logger.warn("Unauthorized attempt by user {} to update petition {}", userId, petitionId)
+                throw UnauthorizedAccessException("User not authorized to update this petition")
+            }
+
+            try {
+                val updatedPetition =
+                    petitionRepository.create(petition.copy(id = existingPetition.id, userId = userId))
+                logger.info(
+                    "User {} successfully updated petition with ID {}. New ID after update: {}",
+                    userId, petitionId, updatedPetition.id
+                )
+                updatedPetition
+            } catch (e: Exception) {
+                logger.error("Failed to update petition with ID {} for user {}: {}", petitionId, userId, petition, e)
+                throw e
+            }
         }
 
-    override fun deletePetitionById(id: String): Boolean =
+    override fun deletePetitionById(petitionId: String, userId: String): Boolean =
         run {
-            logger.info("Attempt to delete petition {}", id)
-            getPetitionById(id)
-                ?.let {
-                    logger.info("Petition with id : {} found! Making attempt to delete", id)
-                    try {
-                        val result = petitionRepository.deleteById(id)
-                        logger.info("Petition with id : {} succesfully deleted", id)
-                        result
-                    } catch (e: Exception) {
-                        logger.error("Deletion failed! Failed to delete petition! Petition id : {}", id, e)
-                        throw e
-                    }
-                }
-                ?: run {
-                    logger.error("Updation Failed! Petition {} Not Found", id)
-                    throw PetitionNotFoundException()
-                }
+            logger.info("User {} attempting to delete petition with ID: {}", userId, petitionId)
+            val existingPetition = getPetitionById(petitionId) ?: run {
+                logger.warn("Petition with ID {} not found during deletion attempt", petitionId)
+                throw PetitionNotFoundException()
+            }
+
+            if (existingPetition.userId != userId) {
+                logger.warn("Unauthorized attempt by user {} to delete petition {}", userId, petitionId)
+                throw UnauthorizedAccessException("User not authorized to delete this petition")
+            }
+
+            try {
+                val result = petitionRepository.deleteById(petitionId)
+                logger.info("User {} successfully deleted petition with ID: {}", userId, petitionId)
+                result
+            } catch (e: Exception) {
+                logger.error("Failed to delete petition with ID {} for user {}: ", petitionId, userId, e)
+                throw e
+            }
         }
 }

@@ -46,43 +46,43 @@ class UserServiceImplementation(val userRepository: UserDao) : UserService {
             users
         }
 
-    override fun updateUserById(id: String, user: User): User =
+    override fun updateUserById(targetId: String, user: User, currentId : String): User =
         run {
-            logger.info("Attempt to update User {} with data : {}", id, user)
-            getUserById(id)
+            logger.info("Attempt to update User {} with data : {}", targetId, user)
+            getUserById(targetId)
                 ?.let {
-                    logger.info("User with id : {} found! Making attempt to update data", id)
+                    logger.info("User with id : {} found! Making attempt to update data", targetId)
                     try {
                         val updatedUser = userRepository.create(user)
-                        logger.info("User {} Succesfully Updated. Id after updation : {} ", id, updatedUser.id)
+                        logger.info("User {} Succesfully Updated. Id after updation : {} ", targetId, updatedUser.id)
                         updatedUser
                     } catch (e: Exception) {
-                        logger.error("Failed to update User {}", id, e)
+                        logger.error("Failed to update User {}", targetId, e)
                         throw e
                     }
                 }
                 ?: run {
-                    logger.error("User Not Found {}", id)
+                    logger.error("User Not Found {}", targetId)
                     throw UserNotFoundException()
                 }
         }
 
-    override fun deleteUserById(id: String): Boolean =
+    override fun deleteUserById(targetId: String, currentId: String): Boolean =
         run {
-            logger.info("Attempt to delete User {}", id)
-            getUserById(id)
+            logger.info("Attempt to delete User {}", targetId)
+            getUserById(targetId)
                 ?.let {
-                    logger.info("User with id : {} found! Making attempt to delete", id)
+                    logger.info("User with id : {} found! Making attempt to delete", targetId)
                     try {
-                        val result = userRepository.deleteById(id)
-                        logger.info("User {} Succesfully Deleted", id)
+                        val result = userRepository.deleteById(targetId)
+                        logger.info("User {} Succesfully Deleted", targetId)
                         result
                     } catch (e: Exception) {
-                        logger.error("Failed to delete User {}", id, e)
+                        logger.error("Failed to delete User {}", targetId, e)
                         throw e
                     }
                 } ?: run {
-                logger.error("User Not Found {}", id)
+                logger.error("User Not Found {}", targetId)
                 throw UserNotFoundException()
             }
         }
