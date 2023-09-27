@@ -1,16 +1,33 @@
 package com.rys.springrysakovbohdan.repository.impl.data
 
 import com.rys.springrysakovbohdan.model.Petition
-import com.rys.springrysakovbohdan.repository.PetitionDAO
-import org.bson.types.ObjectId
-import org.springframework.data.mongodb.repository.MongoRepository
+import com.rys.springrysakovbohdan.repository.PetitionDao
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PetitionRepository : MongoRepository<Petition, ObjectId>, PetitionDAO {
-    override fun getPetitionById(id: String): Petition?
+class PetitionRepository(private val petitionRepository: PetitionMongoRepository) : PetitionDao {
+    override fun findById(id: String): Petition? {
+        return petitionRepository.getPetitionById(id)
+    }
 
-    override fun getAllPetitions(): List<Petition>
+    override fun create(petition: Petition): Petition {
+        return petitionRepository.save(petition)
+    }
 
-    override fun deletePetitionById(id: String): Boolean
+    override fun findAll(): List<Petition> {
+        return petitionRepository.findAll()
+    }
+
+    override fun deleteById(id: String): Boolean {
+        return petitionRepository.deletePetitionById(id)
+    }
+
+    override fun deleteAll(): Boolean {
+        petitionRepository.deleteAll()
+        return true
+    }
+
+    override fun findByPetitionsUserId(id: String): List<Petition> {
+        return petitionRepository.findAllByUserId(id)
+    }
 }

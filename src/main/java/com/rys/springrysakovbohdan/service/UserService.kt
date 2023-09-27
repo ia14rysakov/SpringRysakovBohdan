@@ -12,7 +12,9 @@ interface UserService {
 
     fun getAllUsers(): List<User>
 
-    fun updateUserById(id: String, user: User): User
+    fun updateUserById(targetId: String, user: User, currentId: String): User
 
-    fun deleteUserById(id: String): Boolean
+    fun deleteUserById(targetId: String, currentId: String): Boolean
+
+    fun deleteAllUsers(): Boolean
 }

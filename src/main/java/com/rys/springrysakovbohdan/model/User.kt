@@ -12,7 +12,7 @@ data class User(
     val id: String? = null,
     @field:NotNull(message = "User's name cant be null!")
     @field:Size(min = 5, message = "User's name must be at least 5 symbols light")
-    val username: String,
+    val login: String,
     @field:NotNull(message = "User's password cant be null!")
     @field:Size(min = 9, message = "User's password must be at least 8 symbols light")
     val password: String,

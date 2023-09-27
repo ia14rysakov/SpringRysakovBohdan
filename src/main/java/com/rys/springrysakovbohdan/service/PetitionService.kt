@@ -6,13 +6,15 @@ import org.springframework.stereotype.Service
 @Service
 interface PetitionService {
 
-    fun createPetition(petition: Petition): Petition
+    fun createPetition(petition: Petition, userId: String): Petition
 
     fun getPetitionById(id: String): Petition?
 
     fun getAllPetitions(): List<Petition>
 
-    fun updatePetition(id: String, petition: Petition): Petition
+    fun updatePetition(petitionId: String, petition: Petition, userId: String): Petition
 
-    fun deletePetitionById(id: String): Boolean
+    fun deletePetitionById(petitionId: String, userId: String): Boolean
+
+    fun deleteAllPetitions(): Boolean
 }

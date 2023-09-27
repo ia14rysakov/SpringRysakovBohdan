@@ -6,13 +6,15 @@ import org.springframework.stereotype.Service
 @Service
 interface VoteService {
 
-    fun createVote(vote: Vote): Vote
+    fun createVote(vote: Vote, userId: String): Vote
 
     fun getVoteById(id: String): Vote?
 
     fun getAllVotes(): List<Vote>
 
-    fun updateVote(id: String, vote: Vote): Vote
+    fun updateVote(voteId: String, vote: Vote, userId: String): Vote
 
-    fun deleteVoteById(id: String): Boolean
+    fun deleteVoteById(voteId: String,userId: String): Boolean
+
+    fun deleteAllVotes(): Boolean
 }

@@ -1,16 +1,34 @@
 package com.rys.springrysakovbohdan.repository.impl.data
 
 import com.rys.springrysakovbohdan.model.Vote
-import com.rys.springrysakovbohdan.repository.VoteDAO
-import org.bson.types.ObjectId
-import org.springframework.data.mongodb.repository.MongoRepository
+import com.rys.springrysakovbohdan.repository.VoteDao
 import org.springframework.stereotype.Repository
 
+
 @Repository
-interface VoteRepository : MongoRepository<Vote, ObjectId>,VoteDAO {
-    override fun getVoteById(id: String): Vote?
+class VoteRepository(private val voteMongoRepository: VoteMongoRepository) : VoteDao {
+    override fun findById(id: String): Vote? {
+        return voteMongoRepository.findById(id)
+    }
 
-    override fun getAllVotes(): List<Vote>
+    override fun create(vote: Vote): Vote {
+        return voteMongoRepository.save(vote)
+    }
 
-    override fun deleteVoteById(id: String): Boolean
+    override fun findAll(): List<Vote> {
+        return voteMongoRepository.findAll()
+    }
+
+    override fun deleteById(id: String): Boolean {
+        return voteMongoRepository.deleteVoteById(id)
+    }
+
+    override fun deleteAll(): Boolean {
+        voteMongoRepository.deleteAll()
+        return true
+    }
+
+    override fun findByUserId(id: String): List<Vote> {
+        return voteMongoRepository.findVotesByUserId(id)
+    }
 }

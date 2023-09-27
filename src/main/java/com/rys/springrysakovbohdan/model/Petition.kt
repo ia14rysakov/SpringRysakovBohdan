@@ -18,7 +18,7 @@ data class Petition(
     @field:Size(min = 30, message = "Petition description must be at least 30 symbols length!")
     val description: String,
     @field:NotBlank(message = "Petition must have author!")
-    val createdBy: String,
+    val userId: String,
     var votes: Int = 0,
     @field:NotBlank(message = "Petition must have link!")
     val url: String
