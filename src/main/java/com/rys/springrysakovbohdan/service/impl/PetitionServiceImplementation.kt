@@ -2,7 +2,7 @@ package com.rys.springrysakovbohdan.service.impl
 
 import com.rys.springrysakovbohdan.exceptions.PetitionNotFoundException
 import com.rys.springrysakovbohdan.model.Petition
-import com.rys.springrysakovbohdan.repository.PetitionDAO
+import com.rys.springrysakovbohdan.repository.PetitionDao
 import com.rys.springrysakovbohdan.service.PetitionService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -10,14 +10,14 @@ import java.lang.Exception
 
 @Service
 @Suppress("TooGenericExceptionCaught")
-class PetitionServiceImplementation(val petitionRepository: PetitionDAO) : PetitionService {
+class PetitionServiceImplementation(val petitionRepository: PetitionDao) : PetitionService {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     override fun createPetition(petition: Petition): Petition =
         try {
             logger.info("Attempt to create Petition")
-            val newPetition = petitionRepository.createPetition(petition)
+            val newPetition = petitionRepository.create(petition)
             logger.info("Petition {} Succesfully Created", newPetition)
             newPetition
         } catch (e: Exception) {
@@ -28,7 +28,7 @@ class PetitionServiceImplementation(val petitionRepository: PetitionDAO) : Petit
     override fun getPetitionById(id: String): Petition? =
         try {
             logger.info("Attempt to get Petition by Id")
-            val petition = petitionRepository.getPetitionById(id)
+            val petition = petitionRepository.findById(id)
             logger.info("Petition {} Succesfully Found", id)
             petition
         } catch (e: Exception) {
@@ -39,7 +39,7 @@ class PetitionServiceImplementation(val petitionRepository: PetitionDAO) : Petit
     override fun getAllPetitions(): List<Petition> =
         run {
             logger.info("Attempt to get all Petitions")
-            val petition = petitionRepository.getAllPetitions()
+            val petition = petitionRepository.findAll()
             petition.ifEmpty {
                 logger.warn("Petitions Are Not Found! Maybe database is empty?")
             }
@@ -54,7 +54,7 @@ class PetitionServiceImplementation(val petitionRepository: PetitionDAO) : Petit
                 ?.let {
                     logger.info("Petition with id : {} found! Making attempt to update data", id)
                     try {
-                        val newPetition = petitionRepository.createPetition(petition)
+                        val newPetition = petitionRepository.create(petition)
                         logger.info(
                             "Petition with id : {} succesfully updated. Id after updation : {}",
                             id,
@@ -83,7 +83,7 @@ class PetitionServiceImplementation(val petitionRepository: PetitionDAO) : Petit
                 ?.let {
                     logger.info("Petition with id : {} found! Making attempt to delete", id)
                     try {
-                        val result = petitionRepository.deletePetitionById(id)
+                        val result = petitionRepository.deleteById(id)
                         logger.info("Petition with id : {} succesfully deleted", id)
                         result
                     } catch (e: Exception) {

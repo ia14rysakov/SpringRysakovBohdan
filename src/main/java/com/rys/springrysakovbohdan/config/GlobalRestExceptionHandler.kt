@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class GlobalRestExceptionHandler {
-
     @ExceptionHandler(UserNotFoundException::class)
     fun handleUserNotFound(): ResponseEntity<Any> {
         val body = mapOf(

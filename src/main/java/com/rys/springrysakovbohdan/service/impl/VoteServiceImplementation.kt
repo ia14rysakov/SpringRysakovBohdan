@@ -2,7 +2,7 @@ package com.rys.springrysakovbohdan.service.impl
 
 import com.rys.springrysakovbohdan.exceptions.VoteNotFoundException
 import com.rys.springrysakovbohdan.model.Vote
-import com.rys.springrysakovbohdan.repository.VoteDAO
+import com.rys.springrysakovbohdan.repository.VoteDao
 import com.rys.springrysakovbohdan.service.VoteService
 
 import org.slf4j.LoggerFactory
@@ -10,14 +10,14 @@ import org.springframework.stereotype.Service
 
 @Service
 @Suppress("TooGenericExceptionCaught")
-class VoteServiceImplementation(val voteRepository: VoteDAO) : VoteService {
+class VoteServiceImplementation(val voteRepository: VoteDao) : VoteService {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     override fun createVote(vote: Vote): Vote =
         try {
             logger.info("Attempt to create Vote")
-            val newVote = voteRepository.createVote(vote)
+            val newVote = voteRepository.create(vote)
             logger.info("Vote {} Succesfully Created", newVote)
             newVote
         } catch (e: Exception) {
@@ -28,7 +28,7 @@ class VoteServiceImplementation(val voteRepository: VoteDAO) : VoteService {
     override fun getVoteById(id: String): Vote? =
         try {
             logger.info("Attempt to get Vote by Id")
-            val vote = voteRepository.getVoteById(id)
+            val vote = voteRepository.findById(id)
             logger.info("Vote {} Succesfully Found", id)
             vote
         } catch (e: Exception) {
@@ -39,7 +39,7 @@ class VoteServiceImplementation(val voteRepository: VoteDAO) : VoteService {
     override fun getAllVotes(): List<Vote> =
         run {
             logger.info("Attempt to get all Votes")
-            val votes = voteRepository.getAllVotes()
+            val votes = voteRepository.findAll()
             votes.ifEmpty {
                 logger.warn("Votes Are Not Found! Maybe database is empty?")
             }
@@ -54,7 +54,7 @@ class VoteServiceImplementation(val voteRepository: VoteDAO) : VoteService {
                 ?.let {
                     logger.info("Vote with id : {} found! Making attempt to update data", id)
                     try {
-                        val newVote = voteRepository.createVote(vote)
+                        val newVote = voteRepository.create(vote)
                         logger.info("Vote with id  {} Succesfully Updated. Id after updation : {}", id, newVote.id)
                         newVote
                     } catch (e: Exception) {
@@ -75,7 +75,7 @@ class VoteServiceImplementation(val voteRepository: VoteDAO) : VoteService {
                 ?.let {
                     logger.info("Vote with id : {} found! Making attempt to delete", id)
                     try {
-                        val result = voteRepository.deleteVoteById(id)
+                        val result = voteRepository.deleteById(id)
                         logger.info("Vote {} Succesfully Deleted", id)
                         result
                     } catch (e: Exception) {
