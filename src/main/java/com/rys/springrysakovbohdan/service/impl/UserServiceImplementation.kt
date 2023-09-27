@@ -5,18 +5,18 @@ import com.rys.springrysakovbohdan.model.User
 import com.rys.springrysakovbohdan.repository.UserDao
 import com.rys.springrysakovbohdan.service.UserService
 import org.slf4j.LoggerFactory
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
 @Suppress("TooGenericExceptionCaught")
-class UserServiceImplementation(val userRepository: UserDao) : UserService {
+class UserServiceImplementation(val userRepository: UserDao, val psswordEncoder: BCryptPasswordEncoder) : UserService {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
-
     override fun createUser(user: User): User =
         try {
             logger.info("Attempt to create User")
-            val newUser = userRepository.create(user)
+            val newUser = userRepository.create(user.copy(password = (psswordEncoder.encode(user.password))))
             logger.info("User {} Succesfully Created", newUser)
             newUser
         } catch (e: Exception) {

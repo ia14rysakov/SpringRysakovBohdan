@@ -19,40 +19,34 @@ class MongoInit {
             voteService.deleteAllVotes()
             petitionService.deleteAllPetitions()
 
-            // Create 5 users
             val users = mutableListOf<User>()
             for (i in 1..5) {
                 val user = User(
                     login = "user$i",
-                    password = "password$i",
+                    password = "pass$i",
                     email = "user$i@example.com"
                 )
                 users.add(userService.createUser(user))
             }
 
-            // Create 10 petitions
             val petitions = mutableListOf<Petition>()
             for (i in 1..10) {
                 val petition = Petition(
                     title = "Petition Title $i",
                     description = "Description for petition $i. Requesting support.",
-                    userId = users[(i - 1) % 5].id!!, // Assign petitions to users in a round-robin fashion
+                    userId = users[(i - 1) % 5].id!!,
                     url = "https://petition-link-$i.com"
                 )
                 petitions.add(petitionService.createPetition(petition, petition.userId))
             }
 
-            // Create 30 votes
             for (i in 1..30) {
                 val vote = Vote(
-                    petitionId = petitions[(i - 1) % 10].id!!, // Voting on petitions in a round-robin fashion
-                    userId = users[(i - 1) % 5].id!! // Users voting in a round-robin fashion
+                    petitionId = petitions[(i - 1) % 10].id!!,
+                    userId = users[(i - 1) % 5].id!!
                 )
                 voteService.createVote(vote, vote.userId)
-
             }
-
-            // Update 5 petitions
         }
     }
 }
