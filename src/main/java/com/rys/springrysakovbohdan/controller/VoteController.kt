@@ -20,6 +20,7 @@ import java.security.Principal
 
 @RestController
 @RequestMapping("/vote")
+@Suppress("TooGenericExceptionCaught")
 class VoteController(private val voteService: VoteService) {
 
     private val logger = LoggerFactory.getLogger(this::class.java)

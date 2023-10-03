@@ -10,13 +10,16 @@ import org.springframework.stereotype.Service
 
 @Service
 @Suppress("TooGenericExceptionCaught")
-class UserServiceImplementation(val userRepository: UserDao, val psswordEncoder: BCryptPasswordEncoder) : UserService {
+class UserServiceImplementation(
+    val userRepository: UserDao,
+    val passwordEncoder: BCryptPasswordEncoder
+) : UserService {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
     override fun createUser(user: User): User =
         try {
             logger.info("Attempt to create User")
-            val newUser = userRepository.create(user.copy(password = (psswordEncoder.encode(user.password))))
+            val newUser = userRepository.create(user.copy(password = (passwordEncoder.encode(user.password))))
             logger.info("User {} Succesfully Created", newUser)
             newUser
         } catch (e: Exception) {
@@ -46,7 +49,7 @@ class UserServiceImplementation(val userRepository: UserDao, val psswordEncoder:
             users
         }
 
-    override fun updateUserById(targetId: String, user: User, currentId : String): User =
+    override fun updateUserById(targetId: String, user: User, currentId: String): User =
         run {
             logger.info("Attempt to update User {} with data : {}", targetId, user)
             getUserById(targetId)
